@@ -11,7 +11,7 @@ const signupService = async ({ username, password, name, email }) => {
     console.log(data.createdUser);
     return data;
   } catch (e) {
-    console.log(e);
+    console.error(e);
   }
 };
 export { signupService };

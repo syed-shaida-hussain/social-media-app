@@ -10,7 +10,7 @@ const signinService = async ({ username, password }) => {
     return data;
   } catch (e) {
     alert('user not found');
-    console.log(e.response.data);
+    console.error(e.response.data);
   }
 };
 

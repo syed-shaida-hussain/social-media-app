@@ -22,18 +22,17 @@ const Signup = () => {
 
   const signupSubmitHandler = async (user) => {
     const { name, encodedToken, username, email } = await signupService(user);
-    console.log(auth);
     if (encodedToken !== undefined) {
       localStorage.setItem('AUTH_TOKEN', JSON.stringify(encodedToken));
       localStorage.setItem('USERNAME', JSON.stringify(user.firstName));
-      setAuth((auth) => ({
+      setAuth({
         ...auth,
         status: true,
         token: encodedToken,
         name: name,
         username: username,
         email: email
-      }));
+      });
       navigate('/login');
     }
   };

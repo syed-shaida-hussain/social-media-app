@@ -20,12 +20,11 @@ const Signin = () => {
     const { encodedToken } = await signinService(user);
     if (encodedToken !== undefined) {
       localStorage.setItem('AUTH_TOKEN', JSON.stringify(encodedToken));
-      console.log(auth);
-      setAuth((auth) => ({
+      setAuth({
         ...auth,
         status: true,
         token: encodedToken
-      }));
+      });
     }
   };
 

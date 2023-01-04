@@ -1,0 +1,94 @@
+:root {
+  --primary-color: rgb(29, 155, 240);
+  --secondary-color: #f4f4f5;
+  --hover-color: #e4e4e7;
+}
+
+.sidebar-nav {
+  min-width: 6rem;
+}
+
+.posts {
+  width: 65vw;
+}
+
+.wrapper {
+  padding: 1rem;
+  border: 2px solid var(--hover-color);
+  height: fit-content;
+}
+
+.logo {
+  color: var(--primary-color);
+}
+
+.pagename {
+  display: inline;
+}
+
+.post-wrapper:hover {
+  background-color: var(--hover-color);
+}
+
+.tweetarea {
+  width: 50vw;
+  min-height: 5rem;
+  height: fit-content;
+  border: none;
+  display: block;
+  margin: auto;
+  outline: none;
+  background: none;
+}
+
+.tweetarea::placeholder {
+  font-size: 1.2rem;
+}
+
+.tweet-btn {
+  position: relative;
+  left: 50vw;
+  background-color: var(--primary-color);
+  color: var(--secondary-color);
+  padding: 0.5rem 1rem;
+  border-radius: 2rem;
+  font-size: 1.1rem;
+  font-weight: 550;
+}
+
+.like-icon {
+  color: red;
+}
+
+.users {
+  width: 12rem;
+  justify-content: space-between;
+}
+
+.follow-btn {
+  background-color: var(--primary-color);
+  color: var(--secondary-color);
+  border-radius: 1rem;
+  padding: 0.3rem 0.7rem;
+  font-weight: 550;
+}
+
+/* .likes {
+  position: relative;
+} */
+
+/* .options {
+  padding: 0.3rem;
+  font-weight: bolder;
+}
+
+.options:hover {
+  background-color: var(--primary-color);
+  border-radius: 50%;
+} */
+
+/* .modal {
+  width: 15rem;
+  background-color: var(--hover-color);
+  position: relative;
+} */

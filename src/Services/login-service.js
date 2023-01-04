@@ -6,7 +6,9 @@ const signinService = async ({ username, password }) => {
       username: username,
       password: password
     });
+
     console.log(data.foundUser);
+    localStorage.setItem('USER', JSON.stringify(data.foundUser));
     return data;
   } catch (e) {
     alert('user not found');

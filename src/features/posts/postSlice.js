@@ -1,19 +1,17 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axios from 'axios';
-// import { useParams } from 'react-router-dom';
 
 const initialState = {
   status: 'idle',
   error: null,
   posts: [],
   userPosts: [],
-  singlePost: {}
+  singlePost: {},
+  visitedUserPosts: []
 };
 
 const encodedToken = localStorage.getItem('AUTH_TOKEN');
 const username = localStorage.getItem('USERNAME');
-const user = localStorage.getItem('USER');
-const currentUser = JSON.parse(user);
 
 export const loadPosts = createAsyncThunk('posts/loadPosts', async () => {
   const res = await fetch('/api/posts');
@@ -27,19 +25,23 @@ export const loadUserPosts = createAsyncThunk('posts/loadUserPosts', async () =>
   return data;
 });
 
-// export const loadSinglePost = createAsyncThunk('posts/loadSinglePost', async (action) => {
-//   const postId = action;
-//   const res = await fetch(`/api/posts/${postId}`);
-//   const data = await res.json();
-//   return data;
-// });
+export const loadVisitedUserPosts = createAsyncThunk(
+  'posts/loadVisitedUserPosts',
+  async (action) => {
+    const username = action.username;
+    const res = await fetch(`/api/posts/user/${username}`);
+    const data = await res.json();
+    return data;
+  }
+);
 
 const postSlice = createSlice({
   name: 'posts',
   initialState,
   reducers: {
     likeButtonPressed: (state, action) => {
-      const postId = action.payload._id;
+      const postId = action.payload.post._id;
+      const currentUser = action.payload.user;
       axios.post(
         `/api/posts/like/${postId}`,
         {},
@@ -52,7 +54,8 @@ const postSlice = createSlice({
       state.posts[postIndex].likes.likedBy = [...state.posts[postIndex].likes.likedBy, currentUser];
     },
     dislikeButtonPressed: (state, action) => {
-      const postId = action.payload._id;
+      const postId = action.payload.post._id;
+      const currentUser = action.payload.user;
       axios.post(
         `/api/posts/dislike/${postId}`,
         {},
@@ -72,6 +75,9 @@ const postSlice = createSlice({
       });
       state.posts = [...state.posts, action.payload];
       state.userPosts = [...state.userPosts, action.payload];
+      // axios
+      //   .get('/api/users/bookmark', { headers: { authorization: encodedToken } })
+      //   .then((res) => console.log(res));
     },
     deletePost: (state, action) => {
       const postId = action.payload._id;
@@ -94,20 +100,18 @@ const postSlice = createSlice({
     [loadUserPosts.fulfilled]: (state, action) => {
       state.userPosts = action.payload.posts;
       state.status = 'fulfilled';
+    },
+    [loadVisitedUserPosts.pending]: (state) => {
+      state.status = 'loading';
+    },
+    [loadVisitedUserPosts.fulfilled]: (state, action) => {
+      state.visitedUserPosts = action.payload.posts;
+      state.status = 'fulfilled';
     }
-    // [loadSinglePost.pending]: (state) => {
-    //   state.status = 'loading';
-    // },
-    // [loadSinglePost.fulfilled]: (state, action) => {
-    //   state.singlePost = action.payload.post;
-    //   state.status = 'fulfilled';
-    // }
   }
 });
 
-export const { likeButtonPressed } = postSlice.actions;
-export const { dislikeButtonPressed } = postSlice.actions;
-export const { addNewPost } = postSlice.actions;
-export const { deletePost } = postSlice.actions;
+export const { likeButtonPressed, dislikeButtonPressed, addNewPost, deletePost } =
+  postSlice.actions;
 
 export default postSlice.reducer;

@@ -5,12 +5,12 @@ const initialState = {
   status: 'idle',
   error: null,
   users: [],
-  currentUser: {}
+  currentUser: {},
+  bookmarks: [],
+  visitedUser: {}
 };
 
 const encodedToken = localStorage.getItem('AUTH_TOKEN');
-const user = localStorage.getItem('USER');
-const currentUser = JSON.parse(user);
 
 export const fetchUsers = createAsyncThunk('users/fetchUsers', async () => {
   const res = await fetch('/api/users');
@@ -18,14 +18,18 @@ export const fetchUsers = createAsyncThunk('users/fetchUsers', async () => {
   return data;
 });
 
-export const fetchUser = createAsyncThunk('user/fetchUser', async () => {
-  try {
-    // const res = await fetch(`/api/users/${currentUser._id}`);
-    // const data = await res.json();
-    // return data;
-  } catch (e) {
-    console.log(e);
-  }
+export const fetchUser = createAsyncThunk('users/fetchUser', async (action) => {
+  const userId = action._id;
+  const res = await fetch(`/api/users/${userId}`);
+  const data = await res.json();
+  return data;
+});
+
+export const getSingleUser = createAsyncThunk('users/fetchVisitedUser', async (action) => {
+  const userId = action._id;
+  const res = await fetch(`/api/users/${userId}`);
+  const data = await res.json();
+  return data;
 });
 
 const userSlice = createSlice({
@@ -43,10 +47,10 @@ const userSlice = createSlice({
       );
       const userIndex = state.users.findIndex((user) => user._id === userId);
       const currentUserIndex = state.users.findIndex(
-        (user) => user.username === currentUser.username
+        (user) => user.username === state.currentUser.username
       );
 
-      state.users[userIndex].followers = [...state.users[userIndex].followers, currentUser];
+      state.users[userIndex].followers = [...state.users[userIndex].followers, state.currentUser];
       state.users[currentUserIndex].following = [
         ...state.users[currentUserIndex].following,
         action.payload
@@ -56,16 +60,32 @@ const userSlice = createSlice({
       const userId = action.payload._id;
       axios.post(`/api/users/unfollow/${userId}`, {}, { headers: { authorization: encodedToken } });
       const userIndex = state.users.findIndex((user) => user._id === userId);
-      const currentUserIndex = state.users.findIndex(
-        (user) => user.username === currentUser.username
-      );
+      const currentUserIndex = state.users.findIndex((user) => user._id === state.currentUser._id);
       state.users[userIndex].followers = [
-        state.users[userIndex].followers.filter((user) => user._id !== currentUser._id)
+        state.users[userIndex].followers.filter((user) => user._id !== state.currentUser._id)
       ];
       state.users[currentUserIndex].following = [
         state.users[currentUserIndex].following.filter((user) => user._id !== action.payload._id)
       ];
+    },
+    bookmarkPost: (state, action) => {
+      const postId = action.payload._id;
+      axios.post(`/api/users/bookmark/${postId}`, {}, { headers: { authorization: encodedToken } });
+      state.bookmarks = [...state.bookmarks, action.payload];
+    },
+    deleteBookmark: (state, action) => {
+      const postId = action.payload._id;
+      axios.post(
+        `/api/users/remove-bookmark/${postId}`,
+        {},
+        { headers: { authorization: encodedToken } }
+      );
+      state.bookmarks = state.bookmarks.filter((bookmarkedPost) => bookmarkedPost._id !== postId);
     }
+    // getSingleUser : (state,action) => {
+    //   const userId = action.payload._id
+    //   axios.get(`/api/users/${userId}`)
+    // }
   },
   extraReducers: {
     [fetchUsers.pending]: (state) => {
@@ -78,13 +98,20 @@ const userSlice = createSlice({
     [fetchUser.pending]: (state) => {
       state.status = 'loading';
     },
-    [fetchUser.fulfilled]: (state) => {
-      state.currentUser = currentUser;
+    [fetchUser.fulfilled]: (state, action) => {
+      state.currentUser = action.payload.user;
+      state.status = 'fulfilled';
+    },
+    [getSingleUser.pending]: (state) => {
+      state.status = 'loading';
+    },
+    [getSingleUser.fulfilled]: (state, action) => {
+      state.visitedUser = action.payload.user;
       state.status = 'fulfilled';
     }
   }
 });
 
-export const { followUser, unfollowUser } = userSlice.actions;
+export const { followUser, unfollowUser, bookmarkPost, deleteBookmark } = userSlice.actions;
 
 export default userSlice.reducer;

@@ -9,6 +9,7 @@ const signupService = async ({ username, password, name, email }) => {
       email: email
     });
     console.log(data.createdUser);
+    localStorage.setItem('USER', JSON.stringify(data.createdUser));
     return data;
   } catch (e) {
     console.error(e);

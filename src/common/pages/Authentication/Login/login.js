@@ -1,14 +1,21 @@
-import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import axios from 'axios';
+import { Link, useNavigate } from 'react-router-dom';
 import { fetchUser, fetchUsers } from '../../../../features/posts/userSlice';
-import { signinService } from '../../../../Services/login-service';
 import '../../../../style/utils.css';
 import '../../Authentication/auth.css';
-import { useDispatch, useSelector } from 'react-redux';
-import { useNavigate } from 'react-router-dom';
+import { useDispatch } from 'react-redux';
+import { Sidebar } from '../../../compoments/sidebar';
+import { ProfilePage } from '../../ProfilePage/userProfile';
 
 const Signin = () => {
-  const { currentUser } = useSelector((store) => store.auth);
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    dispatch(fetchUser());
+  }, [dispatch]);
+
   const [user, setUser] = useState({
     username: '',
     password: ''
@@ -20,8 +27,21 @@ const Signin = () => {
     username: localStorage.getItem('USERNAME') || ''
   });
 
-  const dispatch = useDispatch();
-  const navigate = useNavigate();
+  const signinService = async ({ username, password }) => {
+    try {
+      const { data } = await axios.post('/api/auth/login', {
+        username: username,
+        password: password
+      });
+      console.log(data.foundUser);
+      dispatch(fetchUser(data.foundUser));
+      localStorage.setItem('USER', JSON.stringify(data.foundUser));
+      return data;
+    } catch (e) {
+      alert('user not found');
+      console.error(e.response.data);
+    }
+  };
 
   const signinSubmitHandler = async (user) => {
     const { encodedToken } = await signinService(user);
@@ -34,7 +54,6 @@ const Signin = () => {
         token: encodedToken
       });
       dispatch(fetchUsers());
-      dispatch(fetchUser());
       navigate('/home');
     }
   };
@@ -43,6 +62,7 @@ const Signin = () => {
     localStorage.removeItem('AUTH_TOKEN');
     localStorage.removeItem('USERNAME');
     localStorage.removeItem('USER');
+    localStorage.removeItem('USERID');
     setAuth({ ...auth, status: false });
   };
   return (
@@ -103,7 +123,10 @@ const Signin = () => {
               Logout
             </button>
           </div>
-          {currentUser.username}
+          <div className="flex-r">
+            <Sidebar />
+            <ProfilePage />
+          </div>
         </div>
       )}
     </div>

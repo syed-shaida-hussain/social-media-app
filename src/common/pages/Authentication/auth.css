@@ -48,7 +48,8 @@ body {
 }
 
 .logout-btn-container {
-  text-align: right;
+  position: absolute;
+  left: 40rem;
 }
 
 .password-info {

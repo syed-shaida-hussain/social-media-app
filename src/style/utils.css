@@ -49,6 +49,10 @@ body {
   margin-left: 7rem;
 }
 
+.mr5 {
+  margin-right: 5rem;
+}
+
 .mt1 {
   margin-top: 1rem;
 }
@@ -69,6 +73,10 @@ body {
   font-size: 3rem;
 }
 
+.font-small {
+  font-size: small;
+}
+
 .btn {
   border: none;
   cursor: pointer;
@@ -81,4 +89,8 @@ body {
 
 .p1 {
   padding: 1rem;
+}
+
+.ml2 {
+  margin-left: 2rem;
 }

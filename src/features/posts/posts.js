@@ -2,17 +2,16 @@ import { useEffect, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import {
   addNewPost,
-  deletePost,
-  dislikeButtonPressed,
-  likeButtonPressed,
   loadPosts,
-  loadUserPosts
+  loadUserPosts,
+  likeButtonPressed,
+  dislikeButtonPressed
 } from './postSlice';
-import { fetchUser, fetchUsers, followUser, unfollowUser } from './userSlice';
+import { fetchUsers, bookmarkPost, deleteBookmark } from './userSlice';
 import { v4 as uuid } from 'uuid';
 import { formatDate } from '../../backend/utils/authUtils';
-import { Link } from 'react-router-dom';
 import { useNavigate } from 'react-router-dom';
+import { Users } from '../../common/compoments/users';
 
 export default function Posts() {
   const username = localStorage.getItem('USERNAME');
@@ -30,8 +29,8 @@ export default function Posts() {
   });
 
   const { posts, status } = useSelector((store) => store.timeline);
-  const { users } = useSelector((store) => store.auth);
-  const { currentUser } = useSelector((store) => store.auth);
+  const { currentUser, bookmarks } = useSelector((store) => store.auth);
+
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
@@ -39,27 +38,13 @@ export default function Posts() {
     if (status === 'idle') {
       dispatch(fetchUsers());
       dispatch(loadPosts());
-      dispatch(fetchUser());
       dispatch(loadUserPosts());
     }
   }, [dispatch, status]);
 
   const addPostHandler = () => {
     dispatch(addNewPost(post));
-    setPost({ ...post, content: '', _id: uuid() });
-  };
-
-  const followHandler = (user) => {
-    dispatch(followUser(user));
-  };
-
-  const unfollowHandler = (user) => {
-    dispatch(unfollowUser(user));
-  };
-
-  const deletePostHandler = (post) => {
-    console.log(post);
-    dispatch(deletePost(post));
+    setPost({ ...post, content: '', _id: uuid(), img: '' });
   };
 
   const getSinglePost = (post) => {
@@ -86,9 +71,6 @@ export default function Posts() {
             }}
             value={post.content}
           />
-          <button>
-            <Link to="/login"> Login</Link>
-          </button>
           <div>
             <button type="submit" className="tweet-btn mt1 mb1 btn">
               Tweet
@@ -96,29 +78,39 @@ export default function Posts() {
           </div>
         </form>
         {posts.map((post) => (
-          <div className="mb1 wrapper hover-bg" key={post._id} onClick={() => getSinglePost(post)}>
-            <div className="flex-r space-bw align-items">
-              <div>@{post.username}</div>
+          <div className="mb1 wrapper hover-bg" key={post._id}>
+            <div onClick={() => getSinglePost(post)}>
+              <div className="flex-r space-bw align-items">
+                <div>@{post.username}</div>
+              </div>
+              <p>{post.content}</p>
             </div>
-            <p>{post.content}</p>
             <div className="flex-r align-items mt1">
               {post.likes.likedBy.find((user) => user._id === currentUser._id) ? (
                 <span
                   className="material-icons like-icon btn"
-                  onClick={() => dispatch(dislikeButtonPressed(post))}>
+                  onClick={() => dispatch(dislikeButtonPressed({ post: post, user: currentUser }))}>
                   favorite
                 </span>
               ) : (
                 <span
                   className="material-symbols-outlined btn"
-                  onClick={() => dispatch(likeButtonPressed(post))}>
+                  onClick={() => dispatch(likeButtonPressed({ post: post, user: currentUser }))}>
                   favorite
                 </span>
               )}
               <span className="likes">{post.likes.likeCount}</span>
-              {post.username === currentUser.username && (
-                <span className="material-icons" onClick={() => deletePostHandler(post)}>
-                  delete
+              {bookmarks?.find((bookmarkedPost) => bookmarkedPost._id === post._id) ? (
+                <span
+                  className="material-icons like-icon btn"
+                  onClick={() => dispatch(deleteBookmark(post))}>
+                  bookmark
+                </span>
+              ) : (
+                <span
+                  className="material-symbols-outlined btn"
+                  onClick={() => dispatch(bookmarkPost(post))}>
+                  bookmark
                 </span>
               )}
             </div>
@@ -127,23 +119,7 @@ export default function Posts() {
       </section>
       <section className="wrapper ml1">
         <h3>Suggestions</h3>
-        {users.map(
-          (user) =>
-            user.username !== currentUser.username && (
-              <div className="flex-r users mt-half" key={user._id}>
-                <span>@{user.username}</span>
-                {user.followers.includes(currentUser) ? (
-                  <button className="btn follow-btn" onClick={() => unfollowHandler(user)}>
-                    Following
-                  </button>
-                ) : (
-                  <button className="btn follow-btn" onClick={() => followHandler(user)}>
-                    Follow
-                  </button>
-                )}
-              </div>
-            )
-        )}
+        <Users />
       </section>
     </main>
   );

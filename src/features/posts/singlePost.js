@@ -2,9 +2,10 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useParams } from 'react-router-dom';
 import { Sidebar } from '../../common/compoments/sidebar';
 import { dislikeButtonPressed, likeButtonPressed } from './postSlice';
+import { bookmarkPost, deleteBookmark } from './userSlice';
 
 export default function SinglePost() {
-  const { currentUser } = useSelector((store) => store.auth);
+  const { currentUser, bookmarks } = useSelector((store) => store.auth);
   const { posts } = useSelector((store) => store.timeline);
   const { postId } = useParams();
   const singlePost = posts.find((post) => post._id === postId);
@@ -24,17 +25,34 @@ export default function SinglePost() {
               {singlePost.likes.likedBy.find((user) => user._id === currentUser._id) ? (
                 <span
                   className="material-icons like-icon btn"
-                  onClick={() => dispatch(dislikeButtonPressed(singlePost))}>
+                  onClick={() =>
+                    dispatch(dislikeButtonPressed({ post: singlePost, user: currentUser }))
+                  }>
                   favorite
                 </span>
               ) : (
                 <span
                   className="material-symbols-outlined btn"
-                  onClick={() => dispatch(likeButtonPressed(singlePost))}>
+                  onClick={() =>
+                    dispatch(likeButtonPressed({ post: singlePost, user: currentUser }))
+                  }>
                   favorite
                 </span>
               )}
               <span className="likes">{singlePost.likes.likeCount}</span>
+              {bookmarks?.find((bookmarkedPost) => bookmarkedPost._id === postId) ? (
+                <span
+                  className="material-icons like-icon btn"
+                  onClick={() => dispatch(deleteBookmark(singlePost))}>
+                  bookmark
+                </span>
+              ) : (
+                <span
+                  className="material-symbols-outlined btn"
+                  onClick={() => dispatch(bookmarkPost(singlePost))}>
+                  bookmark
+                </span>
+              )}
               {singlePost.username === currentUser.username && (
                 <span className="material-icons">delete</span>
               )}
